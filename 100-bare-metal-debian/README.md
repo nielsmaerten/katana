@@ -1,8 +1,4 @@
-# Bare-Metal Debian Automated Installation
-
-Perform an automated, bare-metal installation of Debian using a preseed configuration.
-
-## Steps
+# Debian from Scratch
 
 1. **Download Debian Netinst ISO**  
    Get the latest image from: https://www.debian.org/distrib/netinst
