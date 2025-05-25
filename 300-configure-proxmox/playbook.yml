@@ -1,8 +1,103 @@
 ---
-- name: Install Proxmox VE on Debian 12 Bookworm
+- name: Configure Proxmox VE after installation
   hosts: katana
   become: yes
   vars:
+    main_interface: "{{ ansible_default_ipv4.interface }}"
+    bridge_interface: "vmbr0"
+    proxmox_datacenter: "datacenter"
     
   tasks:
-    
+    # Network Bridge Configuration
+    - name: Create network interfaces backup
+      copy:
+        src: /etc/network/interfaces
+        dest: "/etc/network/interfaces.backup.{{ ansible_date_time.epoch }}"
+        remote_src: yes
+        backup: yes
+      tags: network
+
+    - name: Configure network bridge vmbr0
+      blockinfile:
+        path: /etc/network/interfaces
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - Bridge vmbr0"
+        block: |
+          auto {{ bridge_interface }}
+          iface {{ bridge_interface }} inet static
+              address {{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.prefix }}
+              gateway {{ ansible_default_ipv4.gateway }}
+              bridge-ports {{ main_interface }}
+          # Bridge for VMs and containers
+      notify: restart networking
+      tags: network
+
+    # Package installation for essential tools
+    - name: Install additional packages
+      apt:
+        name:
+          - htop
+          - iotop
+          - ntp
+          - curl
+          - rclone
+          - wget
+          - vim
+          - nano
+          - git
+          - tmux
+          - lm-sensors
+        state: present
+      tags: packages
+
+    - name: Self-update rclone
+      command: rclone self-update
+      when: ansible_distribution == "Debian"
+      tags: packages
+
+    - name: Configure NTP for time synchronization
+      systemd:
+        name: ntp
+        enabled: yes
+        state: started
+      tags: time
+
+    # Proxmox specific performance optimizations
+    - name: Set swappiness
+      sysctl:
+        name: vm.swappiness
+        value: '10'
+        state: present
+        sysctl_file: /etc/sysctl.d/99-proxmox.conf
+      tags: performance
+
+    # Monitoring and logging
+    - name: Configure logrotate for Proxmox logs
+      copy:
+        content: |
+          /var/log/pve-firewall.log {
+              weekly
+              missingok
+              rotate 4
+              compress
+              delaycompress
+              notifempty
+              create 640 root adm
+          }
+          /var/log/pvedaemon.log {
+              weekly
+              missingok
+              rotate 4
+              compress
+              delaycompress
+              notifempty
+              create 640 root adm
+          }
+        dest: /etc/logrotate.d/proxmox
+      tags: logging
+
+  handlers:
+    - name: restart networking
+      systemd:
+        name: networking
+        state: restarted
+      tags: network
