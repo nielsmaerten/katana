@@ -3,11 +3,23 @@
   hosts: katana
   become: yes
   vars:
-    main_interface: "{{ ansible_default_ipv4.interface }}"
     bridge_interface: "vmbr0"
     proxmox_datacenter: "datacenter"
     
   tasks:
+    # Detect the main physical interface before any bridge configuration
+    - name: Get physical network interfaces
+      shell: |
+        ip link show | grep -E '^[0-9]+: (eth|ens|enp)' | head -1 | cut -d: -f2 | tr -d ' '
+      register: physical_interface_result
+      changed_when: false
+      tags: network
+
+    - name: Set main interface variable
+      set_fact:
+        main_interface: "{{ physical_interface_result.stdout }}"
+      tags: network
+
     # Network Bridge Configuration
     - name: Create network interfaces backup
       copy:
