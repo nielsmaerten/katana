@@ -1,6 +1,7 @@
 # Proxmox VE Installation
 
 This directory contains Ansible playbooks to install and configure Proxmox VE on a Debian-based server.
+Based on these instructions: https://pve.proxmox.com/wiki/Install_Proxmox_VE_on_Debian_12_Bookworm
 
 ## Prerequisites
 
@@ -12,19 +13,15 @@ This directory contains Ansible playbooks to install and configure Proxmox VE on
 
 1. **Check/update the inventory file**
 
-   Review `inventory.yml`
+   Review `000-common/inventory.yml`
    - Update `ansible_host` to the IP chosen in step 100.
 
-2. **Run the installation playbook**
+1. **Test SSH access**
+
+   Ensure you can login to the server using root
+
+1. **Run the installation playbook**
 
    ```bash
-   ansible-playbook -i inventory.yml playbook.yml
+   ansible-playbook ./200-install-proxmox/playbook.yml
    ```
-
-3. **Access Proxmox Web Interface**
-
-   After installation completes and the server reboots, you can access the Proxmox web interface at:
-   
-   https://katana.local:8006
-
-   Login with your root credentials.

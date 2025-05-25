@@ -1,0 +1,8 @@
+---
+- name: Install Proxmox VE on Debian 12 Bookworm
+  hosts: katana
+  become: yes
+  vars:
+    
+  tasks:
+    

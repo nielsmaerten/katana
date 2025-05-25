@@ -6,9 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This repository "Katana" contains scripts and Ansible playbooks for setting up and managing a home server. The project is organized in numbered steps reflecting the server deployment process:
 
-1.  `100-bare-metal-debian`: Instructions and preseed configuration for automated Debian installation. This sets up the base OS.
-2.  `200-install-proxmox`: Ansible playbooks to install and configure Proxmox VE on the Debian server.
-3.  **Storage Setup** (Conceptual): A detailed plan (`STORAGE_SETUP.md`) outlines the post-installation storage architecture, which will be manually implemented after Proxmox is running. This involves a tiered approach with a main 1TB SSD for Proxmox and active VMs/containers, a secondary SSD dedicated as ZFS L2ARC cache, and HDDs for a ZFS bulk storage pool.
+1.  `000-common`: Shared Ansible configuration and inventory files used across multiple deployment steps.
+2.  `100-bare-metal-debian`: Instructions and preseed configuration for automated Debian installation. This sets up the base OS.
+3.  `200-install-proxmox`: Ansible playbooks to install and configure Proxmox VE on the Debian server.
+4.  `300-configure-proxmox`: Ansible playbooks for post-installation Proxmox configuration.
+5.  **Storage Setup** (Conceptual): A detailed plan (`STORAGE_SETUP.md`) outlines the post-installation storage architecture, which will be manually implemented after Proxmox is running. This involves a tiered approach with a main 1TB SSD for Proxmox and active VMs/containers, a secondary SSD dedicated as ZFS L2ARC cache, and HDDs for a ZFS bulk storage pool.
 
 ## Workflow
 
@@ -16,7 +18,8 @@ This repository follows a sequential approach to server setup:
 
 1.  **Bare metal Debian installation**: Use the preseed configuration in `100-bare-metal-debian/preseed.cfg`.
 2.  **Proxmox VE installation**: Run the Ansible playbook in `200-install-proxmox/playbook.yml`.
-3.  **Manual Storage Configuration**: After Proxmox is installed, manually configure the ZFS pools and cache according to `STORAGE_SETUP.md`.
+3.  **Proxmox configuration**: Run the Ansible playbook in `300-configure-proxmox/playbook.yml`.
+4.  **Manual Storage Configuration**: After Proxmox is installed, manually configure the ZFS pools and cache according to `STORAGE_SETUP.md`.
 
 ## Debian Installation Details
 
@@ -55,17 +58,21 @@ The repository is organized with numbered directories that represent sequential 
 -   `README.md`: Main project overview.
 -   `STORAGE_SETUP.md`: Detailed plan for the server's storage configuration.
 -   `CLAUDE.md`: This file.
+-   `ansible.cfg`: Ansible configuration file.
+-   `000-common/`:
+    -   `inventory.yml`: Ansible inventory file used across all playbooks.
 -   `100-bare-metal-debian/`:
     -   `README.md`: Instructions for Debian installation.
     -   `preseed.cfg`: Automated Debian installer configuration.
 -   `200-install-proxmox/`:
     -   `README.md`: Instructions for running the Proxmox Ansible playbook.
-    -   `inventory.yml`: Ansible inventory file.
     -   `playbook.yml`: Ansible playbook for Proxmox installation.
-    -   `proxmox-ve-install-docs.txt`: Supporting documentation/notes.
+-   `300-configure-proxmox/`:
+    -   `playbook.yml`: Ansible playbook for post-installation Proxmox configuration.
 
 ## Key Considerations for Claude
 
 -   The storage setup described in `STORAGE_SETUP.md` is a manual post-installation step, not automated by current scripts.
--   The Ansible playbook in `200-install-proxmox` assumes the Debian base is already installed and accessible via SSH.
--   Pay attention to IP addresses and hostnames, ensuring consistency between `preseed.cfg`, `inventory.yml`, and `playbook.yml`.
+-   The Ansible playbooks assume the Debian base is already installed and accessible via SSH.
+-   Pay attention to IP addresses and hostnames, ensuring consistency between `preseed.cfg` and `000-common/inventory.yml`.
+-   The `000-common/inventory.yml` file is shared across all Ansible playbooks for consistency.
