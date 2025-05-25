@@ -16,13 +16,11 @@
         line: 'PasswordAuthentication no'
         state: present
         backup: yes
-        notify: restart sshd
 
     - name: Restart SSH service
       systemd:
         name: sshd
         state: restarted
-        listen: restart sshd
 
     - name: Ensure hostname can be resolved to IP address
       block:
@@ -64,6 +62,12 @@
           fail:
             msg: "GPG key checksum verification failed"
           when: gpg_key_stat.stat.checksum != "7da6fe34168adc6e479327ba517796d4702fa2f8b4f0a9833f5ea6e6b48f6507a6da403a274fe201595edc86a84463d50383d07f64bdde2e3658108db7d6dc87"
+
+    - name: Download Proxmox VE post-install script
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/post-pve-install.sh
+        dest: /root/post-pve-install.sh
+        mode: '0700' # Make it executable for root
 
     - name: Update repository and system packages
       apt:
@@ -136,17 +140,11 @@
         state: absent
         purge: yes
 
-    - name: Download Proxmox VE post-install script
-      ansible.builtin.get_url:
-        url: https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/post-pve-install.sh
-        dest: /root/post-pve-install.sh
-        mode: '0700' # Make it executable for root
-
     - name: Display Proxmox VE access information
       debug:
         msg:
           - "Proxmox VE installation completed successfully!"
-          - "To finish setup:
+          - "To finish setup:"
           - "1. Connect to the Proxmox host:"
           - "   ssh root@{{ ansible_host }}"
           - "2. Run the post-install script:"
