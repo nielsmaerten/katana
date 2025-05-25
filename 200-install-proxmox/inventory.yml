@@ -1,0 +1,8 @@
+---
+all:
+  hosts:
+    katana:
+      ansible_host: katana
+      ansible_user: niels
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
