@@ -2,7 +2,7 @@
 all:
   hosts:
     katana:
-      ansible_host: katana
-      ansible_user: niels
+      ansible_host: 192.168.0.2 # Ensure this matches the IP chosen during initial setup
+      ansible_user: root # Proxmox default user - do not change unless you know what you're doing
   vars:
     ansible_python_interpreter: /usr/bin/python3

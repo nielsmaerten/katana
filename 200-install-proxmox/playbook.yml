@@ -3,12 +3,27 @@
   hosts: katana
   become: yes
   vars:
-    proxmox_hostname: "{{ inventory_hostname }}"
+    proxmox_hostname: "katana"
     proxmox_domain: "local"
     proxmox_fqdn: "{{ proxmox_hostname }}.{{ proxmox_domain }}"
     proxmox_ip: "{{ ansible_host }}"
     
   tasks:
+    - name: Disable SSH password authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+        backup: yes
+        notify: restart sshd
+
+    - name: Restart SSH service
+      systemd:
+        name: sshd
+        state: restarted
+        listen: restart sshd
+
     - name: Ensure hostname can be resolved to IP address
       block:
         - name: Verify hostname resolution
@@ -121,22 +136,20 @@
         state: absent
         purge: yes
 
-    - name: Remove installation repository (post-installation cleanup)
-      file:
-        path: /etc/apt/sources.list.d/pve-install-repo.list
-        state: absent
-
-    - name: Final package cache update
-      apt:
-        update_cache: yes
+    - name: Download Proxmox VE post-install script
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/tools/pve/post-pve-install.sh
+        dest: /root/post-pve-install.sh
+        mode: '0700' # Make it executable for root
 
     - name: Display Proxmox VE access information
       debug:
         msg:
           - "Proxmox VE installation completed successfully!"
-          - "Web interface available at: https://{{ proxmox_ip }}:8006"
-          - "Login with root user and PAM authentication realm"
-          - "Remember to:"
-          - "  1. Configure network bridge (vmbr0) in web interface"
-          - "  2. Upload subscription key if you have one"
-          - "  3. Configure backup and monitoring as needed"
+          - "To finish setup:
+          - "1. Connect to the Proxmox host:"
+          - "   ssh root@{{ ansible_host }}"
+          - "2. Run the post-install script:"
+          - "   bash /root/post-pve-install.sh"
+          - "3. Access Proxmox at:"
+          - "   https://{{ ansible_host }}:8006"
