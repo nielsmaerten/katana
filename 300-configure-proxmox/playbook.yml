@@ -52,6 +52,7 @@
           - ntp
           - curl
           - rclone
+          - restic
           - wget
           - vim
           - nano
@@ -63,6 +64,11 @@
 
     - name: Self-update rclone
       command: rclone self-update
+      when: ansible_distribution == "Debian"
+      tags: packages
+
+    - name: Self-update restic
+      command: restic self-update
       when: ansible_distribution == "Debian"
       tags: packages
 
@@ -106,6 +112,28 @@
           }
         dest: /etc/logrotate.d/proxmox
       tags: logging
+
+    # Proxmox Backup Server preparation
+    - name: Create community-scripts directory
+      file:
+        path: /opt/community-scripts
+        state: directory
+        mode: '0755'
+      tags: pbs
+
+    - name: Copy Proxmox Backup Server configuration file
+      copy:
+        src: proxmox-backup-server.conf
+        dest: /opt/community-scripts/proxmox-backup-server.conf
+        mode: '0644'
+      tags: pbs
+
+    - name: Download Proxmox Backup Server installation script
+      get_url:
+        url: https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/proxmox-backup-server.sh
+        dest: /root/install-proxmox-backup-server.sh
+        mode: '0755'
+      tags: pbs
 
   handlers:
     - name: restart networking
