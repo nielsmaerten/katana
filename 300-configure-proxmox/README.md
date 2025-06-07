@@ -9,6 +9,7 @@ Ansible playbook for configuring Proxmox VE after installation. Sets up networki
 3. **Time Sync**: Configures NTP service
 4. **Performance**: Sets swappiness to 10 for better VM performance
 5. **Logging**: Configures log rotation for Proxmox logs
+6. **Prep PBS installation**: Adds script & config file to install Proxmox Backup Server in the next step
 
 ## Prerequisites
 

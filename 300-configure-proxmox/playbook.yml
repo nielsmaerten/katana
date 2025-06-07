@@ -135,6 +135,12 @@
         mode: '0755'
       tags: pbs
 
+    - name: Display next steps
+      debug:
+        msg:
+          - "Proxmox is now configured."
+          - "Refer to the Next Steps to install Proxmox Backup Server & set up storage."
+
   handlers:
     - name: restart networking
       systemd:

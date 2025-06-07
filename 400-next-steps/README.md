@@ -1,10 +1,10 @@
 # Setting Up Containers on Proxmox
 
-After installing Proxmox, the next step is to set up containers. This process may vary, but here are some general guidelines.
+Now that Proxmox is configured, the next step is to set up containers. This process may vary, but here are some general guidelines.
 
 ## Proxmox Backup Server (PBS)
 
-The Proxmox Backup Server is essential for most setups. Follow these steps to install and configure it:
+Essential for most setups. Follow these steps to install and configure it:
 
 1. **Review Configuration**  
    Check the settings in `/opt/community-scripts/proxmox-backup-server.conf` (created during step 300).
