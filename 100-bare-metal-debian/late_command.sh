@@ -21,4 +21,4 @@ echo "127.0.1.1 katana.local katana" >> /etc/hosts
 
 # Configure login banner with IP address
 IP=$(ip route get 1.1.1.1 | grep -oP "src \\K\\S+")
-echo "Katana \\n.\\O \\l [$IP]" > /etc/issue
+echo "KATANA :: installation completed. Move on to Step 200. \\O \\l [$IP]" > /etc/issue

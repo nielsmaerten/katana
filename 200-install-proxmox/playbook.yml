@@ -144,13 +144,5 @@
       debug:
         msg:
           - "Proxmox VE installation completed successfully!"
-          - "To finish setup:"
-          - "1. Connect to the Proxmox host:"
-          - "   ssh root@{{ ansible_host }}"
-          - "   (Don't reboot yet, the post-install script will do that)"
-          - "2. Run the post-install script:"
-          - "   bash /root/post-pve-install.sh"
-          - "   (Default options are usually fine)"
-          - "3. After the reboot, access Proxmox at:"
-          - "   https://{{ ansible_host }}:8006"
-          - "4. Continue with the next playbook."
+          - "For next steps, refer to the post-installation guide:"
+          - "https://github.com/nielsmaerten/katana/blob/main/200-install-proxmox/POST_INSTALL.md"
