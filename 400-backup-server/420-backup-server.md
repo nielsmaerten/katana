@@ -93,4 +93,7 @@ proxmox-backup-manager \
     --match-severity warning,error \
     --target ntfy \
     --comment "Alert me when something fails"
+
+proxmox-backup-manager datastore update local-zfs --notification-mode notification-system
+
 ```
