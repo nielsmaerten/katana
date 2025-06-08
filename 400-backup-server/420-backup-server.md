@@ -54,7 +54,7 @@ proxmox-backup-manager prune-job create retention-main \
     --comment "1 week of hourly, 1 month of daily, 6 months of weekly"
 ```
 
-### Garbage collection
+### Garbage collection (weekly)
 
 ```bash
 proxmox-backup-manager datastore update local-zfs --gc-schedule weekly
@@ -82,7 +82,11 @@ proxmox-backup-manager verify-job create verify-full \
 Run inside the PBS LXC:
 
 ```bash
-proxmox-backup-manager notification endpoint webhook create ntfy --url https://ntfy.niels.me/proxmox-backup-server --method post
+# Use ntfy to send notifications - generate topic name at random
+NTFY_URL=https://ntfy.niels.me/$(openssl rand -hex 12)
+proxmox-backup-manager notification endpoint webhook create \
+    ntfy --url $NTFY_URL --method post
+echo TODO: Subscribe to $NTFY_URL
 
 proxmox-backup-manager \
     notification matcher create ntfy-alerts \

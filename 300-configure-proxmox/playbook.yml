@@ -117,8 +117,8 @@
       debug:
         msg:
           - "Proxmox VE configuration is complete."
-          - "Next step: 400 - Wrapping up"
-          - "https://github.com/nielsmaerten/katana/blob/main/400-wrapping-up/README.md"
+          - "Next step: 400"
+          - "https://github.com/nielsmaerten/katana"
 
   handlers:
     - name: restart networking
