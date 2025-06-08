@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+# Source environment variables
+source /etc/restic/env
+
+# Log start
+logger "Starting Restic cleanup"
+
+# Forget old snapshots (keep 14 days)
+restic forget \
+  --keep-daily 14 \
+  --prune \
+  --verbose 2>&1 | logger -t restic-cleanup
+
+# Check repository consistency
+restic check 2>&1 | logger -t restic-cleanup
+
+# Log completion
+logger "Restic cleanup completed successfully"

@@ -1,0 +1,19 @@
+#!/bin/bash
+set -e
+
+# Source environment variables
+source /etc/restic/env
+
+# Log start
+logger "Starting Restic backup of {{ backup_source }}"
+
+# Run backup
+restic backup {{ backup_source }} \
+  --verbose \
+  --exclude-caches \
+  --exclude='*.tmp' \
+  --exclude='*.temp' \
+  --exclude='lost+found' 2>&1 | logger -t restic-backup
+
+# Log completion
+logger "Restic backup completed successfully"

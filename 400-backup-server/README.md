@@ -9,3 +9,7 @@ Proxmox VE is now ready to be used. The next steps will vary, but here hare some
 ## [Proxmox Backup Server (PBS)](./420-backup-server.md)
 
 - Essential for most setups. The community installation script has already been downloaded.
+
+## [Restic Backup to S3](./430-restic-backup.md)
+
+- Set up automated backups of the PBS datastore to S3-compatible storage using Restic.
