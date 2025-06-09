@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Load .env variables
 if [[ -f /etc/restic/.env ]]; then
-  export $(grep -v '^#' /etc/restic/.env | xargs)
+  source /etc/restic/.env
 else
   echo "Error: .env file not found at /etc/restic/.env" >&2
   exit 1
