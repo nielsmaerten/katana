@@ -98,3 +98,29 @@ proxmox-backup-manager \
 # Enable the notification system on the local-zfs datastore
 proxmox-backup-manager datastore update local-zfs --notification-mode notification-system
 ```
+
+## Backup Jobs
+
+```bash
+# Get the fingerprint of the PBS self-signed cert:
+pct exec 101 -- openssl x509 -in /etc/proxmox-backup/proxy.pem -noout -fingerprint -sha256
+
+# Add PBS as to PVE
+pvesm add pbs pbs-local-zfs \
+  --datastore local-zfs \
+  --username root@pam \
+  --content backup \
+  --password \
+  --server 192.168.0.101 \
+  --fingerprint [FINGERPRINT]
+
+# Create backup job
+BACKUP_SCHEDULE="*/2:00" # Every 2 hours
+pvesh create /cluster/backup \
+  --id katana-backup \
+  --storage pbs-local-zfs \
+  --schedule $BACKUP_SCHEDULE \
+  --mode snapshot \
+  --compress zstd \
+  --all
+```

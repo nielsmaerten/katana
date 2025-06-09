@@ -79,6 +79,28 @@
         state: started
       tags: time
 
+    # Notification configuration
+    - name: Configure ntfy notification webhook
+      shell: |
+        pvesh create /cluster/notifications/endpoints/webhook \
+          --name ntfy \
+          --url "{{ ntfy }}" \
+          --method post
+      when: ntfy is defined
+      ignore_errors: yes
+      tags: notifications
+
+    - name: Create notification matcher for alerts
+      shell: |
+        pvesh create /cluster/notifications/matchers \
+          --name ntfy-alerts \
+          --match-severity warning,error \
+          --target ntfy \
+          --comment "Alert on warnings and errors"
+      when: ntfy is defined
+      ignore_errors: yes
+      tags: notifications
+
     # Proxmox specific performance optimizations
     - name: Set swappiness
       sysctl:

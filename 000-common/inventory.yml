@@ -6,8 +6,6 @@ all:
       ansible_user: root # Proxmox default user - do not change unless you know what you're doing
   vars:
     ansible_python_interpreter: /usr/bin/python3
-    zfs_disks:
-      # List of disks to use for the ZFS pool. Run:
-      # lsblk -o name,type,size,model && ls -l /dev/disk/by-id
-      - /dev/disk/by-id/ata-WDC_WD40EFPX-68C6CN0_WD-WX12DC4HA71X
-      - /dev/disk/by-id/ata-WDC_WD40EFPX-68C6CN0_WD-WX12DC4HA9E8
+
+    # Optional NTFY endpoint to receive notifications
+    ntfy: https://ntfy.sh/example-katana
