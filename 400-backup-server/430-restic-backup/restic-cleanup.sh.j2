@@ -23,3 +23,8 @@ restic check 2>&1 | logger -t restic-cleanup
 
 # Log completion
 logger "Restic cleanup completed successfully"
+
+# Send ntfy notification if webhook is set
+if [[ -n "$KATANA_NTFY_WEBHOOK" ]]; then
+  curl -H "Title: Restic Cleanup" -d "Cleanup completed successfully on $(hostname) at $(date)" "$KATANA_NTFY_WEBHOOK"
+fi
