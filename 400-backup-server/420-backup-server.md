@@ -88,12 +88,13 @@ proxmox-backup-manager notification endpoint webhook create \
     ntfy --url $NTFY_URL --method post
 echo TODO: Subscribe to $NTFY_URL
 
+# Set a notification matcher to alert warning and errors
 proxmox-backup-manager \
     notification matcher create ntfy-alerts \
     --match-severity warning,error \
     --target ntfy \
     --comment "Alert me when something fails"
 
+# Enable the notification system on the local-zfs datastore
 proxmox-backup-manager datastore update local-zfs --notification-mode notification-system
-
 ```
