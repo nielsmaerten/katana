@@ -1,8 +1,13 @@
 #!/bin/bash
 set -e
 
-# Source environment variables
-source /etc/restic/env
+# Load .env variables
+if [[ -f /etc/restic/.env ]]; then
+  export $(grep -v '^#' /etc/restic/.env | xargs)
+else
+  echo "Error: .env file not found at /etc/restic/.env" >&2
+  exit 1
+fi
 
 # Log start
 logger "Starting Restic cleanup"

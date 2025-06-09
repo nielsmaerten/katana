@@ -1,0 +1,48 @@
+---
+- name: Set up Restic backup for PBS datastore to S3
+  hosts: katana
+  become: yes
+  vars:
+    backup_source: /tank/pbs-datastore
+  tasks:
+    - name: Install Restic
+      package:
+        name: restic
+        state: present
+
+    - name: Create restic configuration directory
+      file:
+        path: /etc/restic
+        state: directory
+        mode: '0700'
+        owner: root
+        group: root
+
+    - name: Create Restic scripts
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: '0755'
+        owner: root
+        group: root
+      with_items:
+        - { src: 'restic-init.sh.j2', dest: '/etc/restic/restic-init.sh' }
+        - { src: 'restic-backup.sh.j2', dest: '/etc/cron.daily/restic-backup' }
+        - { src: 'restic-cleanup.sh.j2', dest: '/etc/cron.weekly/restic-cleanup' }
+
+    - name: Copy Restic env file
+      copy:
+        dest: /etc/restic/.env
+        src: restic.env.example
+        mode: '0600'
+        owner: root
+        group: root
+        force: no
+
+    - name: Display setup completion message
+      debug:
+        msg:
+          - "Restic scripts have been set up."
+          - "Run /etc/restic/restic-init.sh to verify the repository is accessible."
+
+

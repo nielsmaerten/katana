@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euo pipefail
+
+# Load .env variables
+if [[ -f /etc/restic/.env ]]; then
+  export $(grep -v '^#' /etc/restic/.env | xargs)
+else
+  echo "Error: .env file not found at /etc/restic/.env" >&2
+  exit 1
+fi
+
+echo "Checking if Restic repository is initialized..."
+if restic snapshots --no-lock > /dev/null 2>&1; then
+  echo "Restic repository is already initialized."
+else
+ echo "Restic repository not initialized or not accessible. Attempting to initialize..."
+  
+  if restic init; then
+   echo "Restic repository initialized successfully."
+  else
+   echo "Error: Failed to initialize Restic repository." >&2
+   echo "Please check /etc/restic/.env" >&2
+   exit 1
+  fi
+fi
+
+echo "Restic repository check and initialization complete."
+exit 0

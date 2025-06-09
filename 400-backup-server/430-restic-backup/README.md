@@ -10,27 +10,16 @@ This step sets up Restic to back up the PBS datastore to an S3-compatible endpoi
 
 ## Configuration
 
-The Ansible playbook `431-restic.yml` will:
+The Ansible playbook `playbook.yml` will:
 
 1. **Install Restic** (if not already present)
-2. **Create configuration files** for S3 credentials and repository settings
-3. **Initialize the Restic repository** (if it doesn't exist)
-4. **Set up cron scripts** for daily backups and weekly cleanup
-5. **Configure 14-day retention** policy
-
-## Environment Variables
-
-1. **Copy the example file**:
-   ```bash
-   cp .env.example .env
-   ```
-
-2. **Edit `.env`** with your actual values & source it
+2. **Create .env file** for restic repository and credentials
+3. **Set up cron scripts** for daily backups and weekly cleanup
 
 ## Running the Playbook
 
 ```bash
-ansible-playbook 400-backup-server/431-restic.yml
+ansible-playbook 400-backup-server/430-restic-backup/playbook.yml
 ```
 
 ## Backup Schedule
@@ -40,9 +29,11 @@ ansible-playbook 400-backup-server/431-restic.yml
 
 ## Manual Operations
 
+ℹ️ `source /etc/restic/.env` before running these commands:
+
 ### Check backup status
 ```bash
-restic -r $RESTIC_REPOSITORY snapshots
+restic snapshots
 ```
 
 ### Run backup manually
@@ -58,18 +49,18 @@ journalctl -t restic-backup
 ### Restore from backup
 ```bash
 # List snapshots
-restic -r $RESTIC_REPOSITORY snapshots
+restic snapshots
 
 # Mount a snapshot for browsing
 mkdir /tmp/restic-mount
-restic -r $RESTIC_REPOSITORY mount /tmp/restic-mount
+restic mount /tmp/restic-mount
 
 # Restore specific files
-restic -r $RESTIC_REPOSITORY restore latest --target /restore/path --include /tank/pbs-datastore/specific-file
+restic restore latest --target /restore/path --include /tank/pbs-datastore/specific-file
 ```
 
 ## Security Notes
 
-- Credentials are stored in `/etc/restic/env` with restricted permissions (600)
+- Credentials are stored in `/etc/restic/.env` with restricted permissions (600)
 - The Restic password should be stored securely and backed up separately
-- Consider using IAM roles or other credential management solutions for production environments
+
