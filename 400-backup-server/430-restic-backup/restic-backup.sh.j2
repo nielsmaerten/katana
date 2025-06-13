@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -o pipefail
 
 # Load .env variables
 if [[ -f /etc/restic/.env ]]; then
@@ -22,8 +23,3 @@ restic backup {{ backup_source }} \
 
 # Log completion
 logger "Restic backup completed successfully"
-
-# Send ntfy notification if webhook is set
-if [[ -n "$KATANA_NTFY_WEBHOOK" ]]; then
-  curl -H "Title: Restic Backup" -d "Backup completed successfully on $(hostname) at $(date)" "$KATANA_NTFY_WEBHOOK"
-fi
