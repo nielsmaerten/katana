@@ -1,0 +1,10 @@
+# Telegraf configuration for lm-sensors metrics to InfluxDB
+
+[[inputs.sensors]]
+  ## No additional configuration is required for lm-sensors input plugin
+
+[[outputs.influxdb_v2]]
+  urls = ["{{ influxdb_url }}"]
+  token = "{{ influxdb_token }}"
+  organization = "{{ influxdb_org }}"
+  bucket = "{{ influxdb_bucket_lm_sensors }}"

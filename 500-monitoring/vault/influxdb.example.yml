@@ -1,0 +1,7 @@
+# Example InfluxDB credentials and configuration for Telegraf
+# Copy this file to vault/influxdb.yml and encrypt it with Ansible Vault
+influxdb_url: "http://10.69.69.103:8086"
+influxdb_token: ""
+influxdb_org: ""
+influxdb_bucket_lm_sensors: "lm-sensors"
+influxdb_bucket_proxmox: "proxmox"

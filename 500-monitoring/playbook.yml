@@ -1,0 +1,104 @@
+---
+- name: Setup monitoring on Proxmox servers
+  hosts: katana
+  become: true
+
+  vars_files:
+    - vault/influxdb.yml 
+
+  tasks:
+    - name: Ensure GnuPG (for GPG key handling) is installed
+      ansible.builtin.apt:
+        name: gnupg
+        state: present
+
+    - name: Download InfluxData GPG key
+      ansible.builtin.get_url:
+        url: https://repos.influxdata.com/influxdata-archive.key
+        dest: /tmp/influxdata-archive.key
+        mode: '0644'
+        checksum: sha256:943666881a1b8d9b849b74caebf02d3465d6beb716510d86a39f6c8e8dac7515
+
+    - name: Add InfluxData GPG key to APT trusted keys
+      ansible.builtin.shell:
+        cmd: cat /tmp/influxdata-archive.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/influxdata-archive.gpg
+        creates: /etc/apt/trusted.gpg.d/influxdata-archive.gpg
+      changed_when: false
+
+    - name: Remove temporary GPG key file
+      ansible.builtin.file:
+        path: /tmp/influxdata-archive.key
+        state: absent
+
+    - name: Add InfluxData APT repository
+      ansible.builtin.apt_repository:
+        repo: deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main
+        state: present
+        filename: influxdata
+        update_cache: yes
+
+    - name: Forcefully purge existing telegraf package (if any)
+      ansible.builtin.apt:
+        name: telegraf
+        state: absent
+        purge: yes
+        force_apt_get: yes
+
+    - name: Ensure telegraf is installed (and repair if needed)
+      ansible.builtin.apt:
+        name: telegraf
+        state: latest
+        update_cache: yes
+        force_apt_get: yes
+
+    - name: Ensure telegraf.d directory exists
+      ansible.builtin.file:
+        path: /etc/telegraf/telegraf.d
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Deploy telegraf config for lm-sensors => InfluxDB
+      template:
+        src: telegraf-sensors.conf.j2
+        dest: /etc/telegraf/telegraf.d/lm-sensors.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart telegraf
+
+    - name: Ensure telegraf service is enabled and running
+      service:
+        name: telegraf
+        state: started
+        enabled: yes
+
+    - name: Configure Proxmox VE to send metrics to InfluxDB in status.cfg
+      ansible.builtin.blockinfile:
+        path: /etc/pve/status.cfg
+        marker: "# {mark} ANSIBLE MANAGED BLOCK for influxdb metric server"
+        block: |
+          influxdb: InfluxDB
+          	server {{ influxdb_url | urlsplit('hostname') }}
+          	port {{ influxdb_url | urlsplit('port') | default(8086) }}
+          	influxdbproto {{ influxdb_url | urlsplit('scheme') | default('http') }}
+          	organization {{ influxdb_org }}
+          	bucket {{ influxdb_bucket_proxmox | default(influxdb_bucket) }}
+          	token {{ influxdb_token }}
+        owner: root
+        group: www-data
+        mode: '0640'
+        create: no # The file should already exist
+      notify: Restart pvestatd
+
+  handlers:
+    - name: Restart telegraf
+      service:
+        name: telegraf
+        state: restarted
+
+    - name: Restart pvestatd
+      service:
+        name: pvestatd
+        state: restarted

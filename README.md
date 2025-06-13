@@ -26,6 +26,7 @@ The setup process is divided into sequential, numbered directories:
 - `200-install-proxmox`: Ansible playbook for Proxmox VE installation.
 - `300-configure-proxmox`: Ansible playbook for Proxmox VE post-installation configuration (networking, tools, performance tuning).
 - `400-backup-server`: Configuration for Proxmox Backup Server and Restic offsite backups.
+- `500-monitoring`: Configuration for Telegraf and Proxmox VE metrics collection to InfluxDB.
 
 ## Getting Started
 
