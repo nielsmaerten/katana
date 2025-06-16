@@ -3,7 +3,7 @@
   hosts: katana
   become: yes
   vars:
-    backup_source: /tank/pbs-datastore
+    backup_source: /tank
   tasks:
     - name: Install Restic
       package:
@@ -38,6 +38,15 @@
         owner: root
         group: root
         force: no
+
+    - name: Copy files-from
+      copy:
+        dest: /etc/restic/files-from.txt
+        src: files-from.txt
+        mode: '0600'
+        owner: root
+        group: root
+        force: yes
 
     - name: Display setup completion message
       debug:

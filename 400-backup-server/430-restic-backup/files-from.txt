@@ -1,0 +1,7 @@
+# DO NOT EDIT DIRECTLY
+#
+# If you need to edit this file, do it inside Ansible Playbook 430.
+# Otherwise, Ansible will overwrite it on the next run.
+
+/tank/pbs-datastore/
+/tank/paperless/

@@ -15,6 +15,7 @@ logger "Starting Restic backup of {{ backup_source }}"
 
 # Run backup
 restic backup {{ backup_source }} \
+  --files-from /etc/restic/files-from.txt \
   --verbose \
   --exclude-caches \
   --exclude='*.tmp' \
