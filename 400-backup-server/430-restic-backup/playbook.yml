@@ -2,8 +2,6 @@
 - name: Set up Restic backup for PBS datastore to S3
   hosts: katana
   become: yes
-  vars:
-    backup_source: /tank
   tasks:
     - name: Install Restic
       package:

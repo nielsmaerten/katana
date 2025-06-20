@@ -3,5 +3,14 @@
 # If you need to edit this file, do it inside Ansible Playbook 430.
 # Otherwise, Ansible will overwrite it on the next run.
 
+## ZFS Tanks
 /tank/pbs-datastore/
 /tank/paperless/
+
+## Proxmox VE configuration
+/etc/pve
+/etc/network/interfaces
+/etc/hosts
+/etc/hostname
+/etc/resolv.conf
+/etc/ssh

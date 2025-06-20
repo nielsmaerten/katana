@@ -11,10 +11,10 @@ else
 fi
 
 # Log start
-logger "Starting Restic backup of {{ backup_source }}"
+logger "Starting Restic backup"
 
 # Run backup
-restic backup {{ backup_source }} \
+restic backup \
   --files-from /etc/restic/files-from.txt \
   --verbose \
   --exclude-caches \
@@ -24,3 +24,4 @@ restic backup {{ backup_source }} \
 
 # Log completion
 logger "Restic backup completed successfully"
+curl --fail --silent --show-error --max-time 10 "$POST_BACKUP_WEBHOOK"
