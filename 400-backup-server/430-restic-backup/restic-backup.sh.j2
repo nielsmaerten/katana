@@ -24,4 +24,5 @@ restic backup \
 
 # Log completion
 logger "Restic backup completed successfully"
-curl --fail --silent --show-error --max-time 10 "$POST_BACKUP_WEBHOOK"
+curl --fail --silent --show-error --max-time 10 "$POST_BACKUP_WEBHOOK" > /dev/null
+echo "Restic backup completed successfully"

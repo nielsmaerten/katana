@@ -24,4 +24,5 @@ restic check 2>&1 | logger -t restic-cleanup
 
 # Log completion
 logger "Restic cleanup completed successfully"
-curl --fail --silent --show-error --max-time 10 "$POST_CLEANUP_WEBHOOK"
+curl --fail --silent --show-error --max-time 10 "$POST_CLEANUP_WEBHOOK" > /dev/null
+echo "Restic cleanup completed successfully"
