@@ -1,0 +1,68 @@
+---
+- name: Create a privileged LXC container to handle backups
+  hosts: katana
+  become: true
+  tasks:
+    - name: Check if LXC container 102 exists
+      command: pct status 102
+      register: lxc_status
+      changed_when: false
+      ignore_errors: true
+
+    - name: Handle existing container
+      block:
+        - name: Ask for confirmation to delete existing container
+          ansible.builtin.pause:
+            prompt: "Container 102 already exists. Do you want to delete it and recreate it? (yes/no)"
+          register: user_confirmation
+
+        - name: Fail if user does not confirm deletion
+          ansible.builtin.fail:
+            msg: "User aborted container recreation."
+          when: user_confirmation.user_input | lower != 'yes'
+
+        - name: Stop existing LXC container
+          command: pct stop 102
+          ignore_errors: true
+
+        - name: Remove existing LXC container
+          command: pct destroy 102
+          ignore_errors: true
+      when: lxc_status.rc == 0
+
+    - name: Create LXC container using pct
+      command: >
+        pct create 102
+        /var/lib/vz/template/cache/debian-12-standard_12.7-1_amd64.tar.zst
+        --hostname debian12-lxc
+        --cores 4
+        --memory 4096
+        --swap 1024
+        --net0 name=eth0,bridge=vmbr0,ip=192.168.0.102/24,gw=192.168.0.1,firewall=0
+        --ostype debian
+        --storage local
+        --rootfs local:8
+        --unprivileged 0
+    - name: Start the LXC container
+      command: pct start 102
+
+    - name: Upload Public SSH Key to LXC using pct
+      command: pct exec 102 -- mkdir -p /root/.ssh
+      ignore_errors: true
+    - name: Upload Public SSH Key to LXC
+      command: pct exec 102 -- sh -c 'wget -O /root/.ssh/authorized_keys https://github.com/nielsmaerten.keys'
+    - name: Set permissions for SSH directory and authorized_keys file
+      command: pct exec 102 -- sh -c 'chmod 700 /root/.ssh && chmod 600 /root/.ssh/authorized_keys'
+      ignore_errors: true
+
+    - command: pct set 102 -mp0 /tank/paperless,mp=/tank/paperless,backup=0,ro=1
+    - command: pct set 102 -mp1 /tank/pbs-datastore,mp=/tank/pbs-datastore,backup=0,ro=1
+    - command: pct set 102 -mp2 /tank/restic,mp=/tank/restic,backup=0
+    - command: pct set 102 -mp3 /etc,mp=/mnt/etc,backup=0,ro=1
+
+    - name: Reboot the LXC container to apply SSH key
+      command: pct reboot 102
+      register: reboot_result
+      until: reboot_result is succeeded
+      retries: 5
+      delay: 10

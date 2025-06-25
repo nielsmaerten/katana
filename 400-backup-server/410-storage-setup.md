@@ -185,6 +185,10 @@ tank/media           96K  1.81T        1M       lz4    off  disabled
 tank/pbs-datastore   96K  1.81T        1M       lz4    off  disabled
 ```
 
+## Optional next steps
+- Create additional datasets for different services
+- Add a caching layer (ARC, L2ARC, SLOG, etc.)
+
 ## Troubleshooting
 
 ### Pool Import Issues

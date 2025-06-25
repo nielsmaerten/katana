@@ -1,0 +1,137 @@
+---
+- name: Configure Off-site Backups with Restic and Rclone
+  hosts: restic-lxc 
+  become: yes
+  vars:
+    resticprofile_url: "https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh"
+   
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      changed_when: false
+
+    - name: Install Restic and Rclone
+      apt:
+        name:
+          - restic
+          - rclone
+          - curl
+        state: present
+    
+    - name: Check if resticprofile is already installed
+      command: /usr/local/bin/resticprofile version
+      register: resticprofile_check
+      ignore_errors: yes
+
+    - name: Run resticprofile install script
+      shell: |
+        curl -sSL {{ resticprofile_url }} | bash
+      environment:
+        BINDIR: /usr/local/bin
+      register: resticprofile_install
+      when: resticprofile_check.rc != 0
+
+    - name: Self-update rclone
+      command: /usr/bin/rclone selfupdate
+
+    - name: Self-update resticprofile
+      command: /usr/local/bin/resticprofile self-update
+    
+    - name: Self-update restic
+      command: /usr/bin/restic self-update
+
+    - name: Create rclone config directory
+      file:
+        path: /root/.config/rclone
+        state: directory
+        mode: '0700'
+        owner: root
+        group: root
+
+    - name: Deploy rclone.conf if it does not exist
+      copy:
+        src: assets/rclone.conf
+        dest: /root/.config/rclone/rclone.conf
+        owner: root
+        group: root
+        mode: '0600'
+        force: no
+
+    - name: Create resticprofile directory
+      file:
+        path: "/etc/resticprofile/"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Backup existing resticprofile configuration
+      command: "bash -c 'cp /etc/resticprofile/profiles.yml /etc/resticprofile/profiles.yml.bak.$(date +%Y%m%d%H%M%S)'"
+      ignore_errors: yes
+
+    - name: Deploy resticprofile
+      copy:
+        src: "assets/profiles.yml"
+        dest: "/etc/resticprofile/profiles.yml"
+        owner: root
+        group: root
+        mode: '0644'
+        force: yes
+
+    - name: Check for existing restic password file
+      stat:
+        path: /root/.restic-password.txt
+      register: restic_password_file
+
+    - name: Generate restic password if it does not exist
+      shell: "openssl rand -hex 32 > /root/.restic-password.txt"
+      args:
+        creates: /root/.restic-password.txt
+      when: not restic_password_file.stat.exists
+
+    - name: Set permissions for restic password file
+      file:
+        path: /root/.restic-password.txt
+        owner: root
+        group: root
+        mode: '0400'
+
+    - name: Create systemd service for rclone serve restic
+      copy:
+        dest: /etc/systemd/system/rclone-serve-restic.service
+        src: assets/rclone-serve-restic.service
+      notify:
+        - Reload systemd
+        - Restart rclone serve restic
+
+    - name: Enable and start rclone serve restic service
+      systemd:
+        name: rclone-serve-restic
+        enabled: yes
+        state: started
+        daemon_reload: yes
+
+    - name: Add cron job for rclone sync of /tank/restic
+      cron:
+        name: "rclone sync /tank/restic to off-site"
+        minute: "15"
+        hour: "3"
+        job: "/usr/bin/flock /var/lock/rclone-sync.lock -c '/usr/bin/rclone sync /tank/restic target-restic:'"
+        user: root
+
+    - name: Run resticprofile scheldule --all
+      command: /usr/local/bin/resticprofile schedule --all
+      register: resticprofile_schedule
+      changed_when: "'No profiles found' not in resticprofile_schedule.stdout"
+
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Restart rclone serve restic
+      systemd:
+        name: rclone-serve-restic
+        state: restarted

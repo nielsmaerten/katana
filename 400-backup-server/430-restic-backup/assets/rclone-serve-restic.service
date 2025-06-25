@@ -1,0 +1,13 @@
+[Unit]
+Description=rclone serve restic for /tank/restic
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=root
+Group=root
+ExecStart=/usr/bin/rclone serve restic /tank/restic --addr :80 --log-file /dev/null --log-level INFO
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

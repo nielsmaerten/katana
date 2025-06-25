@@ -4,6 +4,11 @@ all:
     katana:
       ansible_host: 192.168.0.2 # Ensure this matches the IP chosen during initial setup
       ansible_user: root # Proxmox default user - do not change unless you know what you're doing
+
+    # Optional. Used in step 430
+    restic-lxc:
+      ansible_host: 192.168.0.102
+      ansible_user: root
   vars:
     ansible_python_interpreter: /usr/bin/python3
 
