@@ -18,6 +18,7 @@
           - restic
           - rclone
           - curl
+          - tmux
         state: present
     
     - name: Check if resticprofile is already installed
@@ -125,12 +126,11 @@
       cron:
         name: "rclone sync /tank/restic to off-site"
         minute: "15"
-        hour: "3"
         job: "/root/rclone-sync-restic.sh"
         user: root
 
-    - name: Run resticprofile scheldule --all
-      command: /usr/local/bin/resticprofile schedule --all
+    - name: Schedule resticprofile jobs
+      command: /usr/local/bin/resticprofile unschedule --all && /usr/local/bin/resticprofile schedule --all
       register: resticprofile_schedule
       changed_when: "'No profiles found' not in resticprofile_schedule.stdout"
 
