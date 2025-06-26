@@ -34,7 +34,7 @@
       command: >
         pct create 102
         /var/lib/vz/template/cache/debian-12-standard_12.7-1_amd64.tar.zst
-        --hostname debian12-lxc
+        --hostname rclone-restic
         --cores 4
         --memory 4096
         --swap 1024
@@ -43,6 +43,7 @@
         --storage local
         --rootfs local:8
         --unprivileged 0
+        --features nesting=1
     - name: Start the LXC container
       command: pct start 102
 

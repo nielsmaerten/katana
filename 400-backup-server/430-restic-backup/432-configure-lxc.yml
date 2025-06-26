@@ -126,7 +126,7 @@
         name: "rclone sync /tank/restic to off-site"
         minute: "15"
         hour: "3"
-        job: "/usr/bin/flock /var/lock/rclone-sync.lock -c /root/rclone-sync-restic.sh"
+        job: "/root/rclone-sync-restic.sh"
         user: root
 
     - name: Run resticprofile scheldule --all
