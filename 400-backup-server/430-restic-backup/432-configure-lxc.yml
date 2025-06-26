@@ -113,12 +113,20 @@
         state: started
         daemon_reload: yes
 
+    - name: Create rclone sync script for restic
+      copy:
+        dest: /root/rclone-sync-restic.sh
+        src: assets/rclone-sync-restic.sh
+        owner: root
+        group: root
+        mode: '0700'
+
     - name: Add cron job for rclone sync of /tank/restic
       cron:
         name: "rclone sync /tank/restic to off-site"
         minute: "15"
         hour: "3"
-        job: "/usr/bin/flock /var/lock/rclone-sync.lock -c '/usr/bin/rclone sync /tank/restic target-restic:'"
+        job: "/usr/bin/flock /var/lock/rclone-sync.lock -c /root/rclone-sync-restic.sh"
         user: root
 
     - name: Run resticprofile scheldule --all
