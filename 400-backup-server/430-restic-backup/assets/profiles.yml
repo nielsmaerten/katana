@@ -1,77 +1,81 @@
-# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config.json
-# This file is managed by Ansible. Do not edit manually once it's on the server.
+# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+version: "1"
+
 global:
-  command-output: auto
-  log: /var/log/resticprofile.log
-  initialize: true
-  restic-arguments-filter: true
-groups:
-  default:
-    - pbs
-    - paperless
-
-pbs:
-  repository: "rclone:target-pbs:"
-  password-file: /root/.restic-password.txt
-  sources:
-    - /tank/pbs-datastore
-    - /etc/pve
-    - /etc/network/interfaces
-    - /etc/hosts
-    - /etc/hostname
-    - /etc/resolv.conf
-    - /etc/ssh
-    - /etc/restic
-    - /etc/cron.*
-
-  # Backup options optimized for PBS
-  backup:
-    dry-run: true
-    schedule: "3:00"
-    exclude-caches: true
-    one-file-system: true
-    verbose: 1
-
-  # No long retention needed for PBS datastore,
-  # as this is managed by the PBS server itself.
-  retain:
-    keep-daily: 7
-    prune: true
-
-  check:
-    schedule: "mon 1:00"
-    read-data-subset: "10%"
+  schedule-defaults:
+    permission: "system"
+    lock-wait: "5h"
 
 paperless:
+  status-file: "/root/resticprofile-paperless.status"
   repository: "rclone:target-paperless:"
-  dry-run: true
-  sources:
-    - /tank/paperless
-  schedule: "2:00"
-
-  # Paperless-specific exclusions
-  exclude:
-    - "*.tmp"
-    - "*.lock"
-    - "**/cache/**"
-    - "**/logs/**"
-
-  # Backup options optimized for Paperless
-  backup:
-    exclude-caches: true
-    one-file-system: true
-    verbose: 1
-
-  prune:
-    schedule: "sun 4:00" # Weekly prune at 4 AM
-    max-unused: "5%"
-
-  retain:
-    keep-daily: 30
-    keep-weekly: 8
-    keep-monthly: 12
+  password-file: "/root/.restic-password.txt"
+  forget:
     prune: true
-
+    keep-daily: 30
+    keep-weekly: 52
+    schedule:
+      - "01:00"
+  backup:
+    one-file-system: true
+    source:
+      - "/tank/paperless"
+    exclude-caches: true
+    exclude:
+      - "/**/log/**"
+    send-after:
+      - url: "https://ntfy.sh/katana"
+        method: "POST"
+        body: "Paperless backup completed successfully."
+    send-after-fail:
+      - url: "https://ntfy.sh/katana"
+        method: "POST"
+        body: "Paperless backup failed."
+    schedule:
+      - "01:01" # Will start after the retention job and wait for it to finish
   check:
-    schedule: "sat" # Weekly check at 3 AM
-    read-data-subset: "10%" # Only check 10% of data for faster checks
+    schedule:
+      - "Mon 01:02"
+    read-data-subset: "10%"
+
+katana-backup:
+  status-file: "/root/resticprofile-katana-backup.status"
+  repository: "rclone:target-katana-backup:"
+  password-file: "/root/.restic-password.txt"
+  forget:
+    prune: true
+    keep-daily: 7
+    schedule:
+      - "02:00"
+  backup:
+    one-file-system: true
+    source-base: "/"
+    source:
+      - "/tank/pbs-datastore"
+      - "/mnt/etc/pve"
+      - "/mnt/etc/network/interfaces"
+      - "/mnt/etc/hosts"
+      - "/mnt/etc/hostname"
+      - "/mnt/etc/resolv.conf"
+      - "/mnt/etc/ssh"
+      - "/mnt/etc/restic"
+      - "/mnt/etc/cron.*"
+    exclude-caches: true
+    exclude:
+      - "/**/tmp/**"
+      - "/**/cache/**"
+    send-after:
+      - url: "https://ntfy.sh/katana"
+    send-after-fail:
+      - url: "https://ntfy.sh/katana"
+    schedule:
+      - "02:01"
+  check:
+    schedule:
+      - "Wed 02:02"
+    read-data-subset: "10%"
+
+groups:
+  default:
+    - "paperless"
+    - "katana-backup"
