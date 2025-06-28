@@ -4,8 +4,14 @@
   become: yes
   vars:
     resticprofile_url: "https://raw.githubusercontent.com/creativeprojects/resticprofile/master/install.sh"
+    vault_file: "{{ playbook_dir }}/../vault/vault.yml"
    
   tasks:
+    - name: Include vault variables
+      include_vars:
+        file: "{{ vault_file }}"
+      no_log: true
+
     - name: Update apt cache
       apt:
         update_cache: yes
@@ -22,7 +28,7 @@
         state: present
     
     - name: Check if resticprofile is already installed
-      command: /usr/local/bin/resticprofile version
+      command: /usr/bin/resticprofile version
       register: resticprofile_check
       ignore_errors: yes
 
@@ -30,7 +36,7 @@
       shell: |
         curl -sSL {{ resticprofile_url }} | bash
       environment:
-        BINDIR: /usr/local/bin
+        BINDIR: /usr/bin
       register: resticprofile_install
       when: resticprofile_check.rc != 0
 
@@ -38,7 +44,7 @@
       command: /usr/bin/rclone selfupdate
 
     - name: Self-update resticprofile
-      command: /usr/local/bin/resticprofile self-update
+      command: /usr/bin/resticprofile self-update
     
     - name: Self-update restic
       command: /usr/bin/restic self-update
@@ -73,7 +79,7 @@
       ignore_errors: yes
 
     - name: Deploy resticprofile
-      copy:
+      template:
         src: "assets/profiles.yml"
         dest: "/etc/resticprofile/profiles.yml"
         owner: root
@@ -115,7 +121,7 @@
         daemon_reload: yes
 
     - name: Create rclone sync script for restic
-      copy:
+      template:
         dest: /root/rclone-sync-restic.sh
         src: assets/rclone-sync-restic.sh
         owner: root
@@ -130,7 +136,7 @@
         user: root
 
     - name: Schedule resticprofile jobs
-      command: /usr/local/bin/resticprofile unschedule --all && /usr/local/bin/resticprofile schedule --all
+      command: /usr/bin/resticprofile unschedule --all && /usr/bin/resticprofile schedule --all
       register: resticprofile_schedule
       changed_when: "'No profiles found' not in resticprofile_schedule.stdout"
 

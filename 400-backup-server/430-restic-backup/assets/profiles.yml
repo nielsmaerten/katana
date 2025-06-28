@@ -7,7 +7,7 @@ global:
     lock-wait: "5h"
 
 paperless:
-  status-file: "/root/resticprofile-paperless.status"
+  status-file: "/root/resticprofile-paperless.status.json"
   repository: "rclone:target-paperless:"
   password-file: "/root/.restic-password.txt"
   forget:
@@ -15,41 +15,49 @@ paperless:
     keep-daily: 30
     keep-weekly: 52
     schedule:
-      - "01:00"
+      - "23:30"
   backup:
     one-file-system: true
+    option:
+      - "-o rclone.transfers=4"
     source:
       - "/tank/paperless"
     exclude-caches: true
     exclude:
       - "/**/log/**"
+    send-before:
+      - url: "{{ resticprofile_paperless_url_before }}"
+        method: "POST"
+        body: "Starting Paperless backup."
     send-after:
-      - url: "https://ntfy.sh/katana"
+      - url: "{{ resticprofile_paperless_url_after }}"
         method: "POST"
         body: "Paperless backup completed successfully."
     send-after-fail:
-      - url: "https://ntfy.sh/katana"
+      - url: "{{ resticprofile_paperless_url_fail }}"
         method: "POST"
         body: "Paperless backup failed."
     schedule:
-      - "01:01" # Will start after the retention job and wait for it to finish
+      - "0/2:01" # Will start after the retention job and wait for it to finish
   check:
     schedule:
       - "Mon 01:02"
     read-data-subset: "10%"
 
 katana-backup:
-  status-file: "/root/resticprofile-katana-backup.status"
+  status-file: "/root/resticprofile-katana-backup.status.json"
   repository: "rclone:target-katana-backup:"
   password-file: "/root/.restic-password.txt"
   forget:
     prune: true
     keep-daily: 7
     schedule:
-      - "02:00"
+      - "23:00"
   backup:
     one-file-system: true
     source-base: "/"
+    option:
+      - "-o rclone.transfers=4"
     source:
       - "/tank/pbs-datastore"
       - "/mnt/etc/pve"
@@ -64,12 +72,20 @@ katana-backup:
     exclude:
       - "/**/tmp/**"
       - "/**/cache/**"
+    send-before:
+      - url: "{{ resticprofile_katana_backup_url_before }}"
+        method: "POST"
+        body: "Starting Katana backup."
     send-after:
-      - url: "https://ntfy.sh/katana"
+      - url: "{{ resticprofile_katana_backup_url_after }}"
+        method: "POST"
+        body: "Katana backup completed successfully."
     send-after-fail:
-      - url: "https://ntfy.sh/katana"
+      - url: "{{ resticprofile_katana_backup_url_fail }}"
+        method: "POST"
+        body: "Katana backup failed."
     schedule:
-      - "02:01"
+      - "0/4:00"
   check:
     schedule:
       - "Wed 02:02"
