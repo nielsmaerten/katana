@@ -13,7 +13,7 @@ SUCCESS_WEBHOOK="{{ rclone_sync_restic_url_success }}"
 FAIL_WEBHOOK="{{ rclone_sync_restic_url_fail }}"
 
 # RCLONE command
-RCLONE_CMD="/usr/bin/rclone sync '$SRC' '$DEST' --log-file '$LOGFILE' --log-level DEBUG && curl -d 'Restic Sync OK.' '$SUCCESS_WEBHOOK' > /dev/null || curl '$FAIL_WEBHOOK' > /dev/null"
+RCLONE_CMD="/usr/bin/rclone sync '$SRC' '$DEST' --log-file '$LOGFILE' --log-level DEBUG && curl '$SUCCESS_WEBHOOK' > /dev/null || curl '$FAIL_WEBHOOK' > /dev/null"
 
 # Get lock and run rclone
 /usr/bin/flock /var/lock/rclone-sync.lock -c "$RCLONE_CMD"
