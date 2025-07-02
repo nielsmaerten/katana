@@ -38,6 +38,40 @@ paperless:
       - "Mon 01:02"
     read-data-subset: "10%"
 
+immich:
+  status-file: "/root/resticprofile-immich.status.json"
+  repository: "rclone:target-immich:"
+  password-file: "/root/.restic-password.txt"
+  forget:
+    prune: true
+    keep-daily: 30
+    keep-monthly: 12
+    keep-yearly: 10
+    schedule:
+      - "4:20"
+  backup:
+    one-file-system: true
+    option:
+      - "-o rclone.transfers=4"
+    source:
+      - "/tank/immich"
+    exclude-caches: true
+    exclude:
+      - "/**/encoded-video/**"
+      - "/**/thumbs/**"
+    send-before:
+      - url: "{{ resticprofile_immich_url_before }}"
+    send-after:
+      - url: "{{ resticprofile_immich_url_after }}"
+    send-after-fail:
+      - url: "{{ resticprofile_immich_url_fail }}"
+    schedule:
+      - "Mon,Thu 6:00"
+  check:
+    schedule:
+      - "Sat 01:00"
+    read-data-subset: "5%"
+
 katana-backup:
   status-file: "/root/resticprofile-katana-backup.status.json"
   repository: "rclone:target-katana-backup:"
