@@ -27,16 +27,10 @@ paperless:
       - "/**/log/**"
     send-before:
       - url: "{{ resticprofile_paperless_url_before }}"
-        method: "POST"
-        body: "Starting Paperless backup."
     send-after:
       - url: "{{ resticprofile_paperless_url_after }}"
-        method: "POST"
-        body: "Paperless backup completed successfully."
     send-after-fail:
       - url: "{{ resticprofile_paperless_url_fail }}"
-        method: "POST"
-        body: "Paperless backup failed."
     schedule:
       - "0/2:01" # Will start after the retention job and wait for it to finish
   check:
@@ -74,16 +68,10 @@ katana-backup:
       - "/**/cache/**"
     send-before:
       - url: "{{ resticprofile_katana_backup_url_before }}"
-        method: "POST"
-        body: "Starting Katana backup."
     send-after:
       - url: "{{ resticprofile_katana_backup_url_after }}"
-        method: "POST"
-        body: "Katana backup completed successfully."
     send-after-fail:
       - url: "{{ resticprofile_katana_backup_url_fail }}"
-        method: "POST"
-        body: "Katana backup failed."
     schedule:
       - "0/4:00"
   check:
