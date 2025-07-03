@@ -117,3 +117,4 @@ groups:
   default:
     - "paperless"
     - "katana-backup"
+    - "immich"

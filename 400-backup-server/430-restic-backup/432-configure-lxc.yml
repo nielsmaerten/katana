@@ -135,10 +135,31 @@
         job: "/root/rclone-sync-restic.sh"
         user: root
 
-    - name: Schedule resticprofile jobs
-      command: /usr/bin/resticprofile unschedule --all && /usr/bin/resticprofile schedule --all
-      register: resticprofile_schedule
-      changed_when: "'No profiles found' not in resticprofile_schedule.stdout"
+    - name: Unschedule any existing resticprofile jobs
+      command: /usr/bin/resticprofile unschedule --all
+
+    - name: Check resticprofile status after unscheduling
+      command: /usr/bin/resticprofile status --all
+      register: resticprofile_status_unscheduled
+
+    - name: Assert that no scheduled jobs are found after unscheduling
+      assert:
+        that:
+          - "'no scheduled jobs found' in resticprofile_status_unscheduled.stdout"
+        fail_msg: "Jobs were not properly unscheduled. Status output: {{ resticprofile_status_unscheduled.stdout }}"
+
+    - name: Schedule all resticprofile jobs
+      command: /usr/bin/resticprofile schedule --all
+
+    - name: Check resticprofile status after scheduling
+      command: /usr/bin/resticprofile status --all
+      register: resticprofile_status_scheduled
+
+    - name: Assert that scheduled jobs are found after scheduling
+      assert:
+        that:
+          - "'no scheduled jobs found' not in resticprofile_status_scheduled.stdout"
+        fail_msg: "Jobs were not properly scheduled. Status output: {{ resticprofile_status_scheduled.stdout }}"
 
   handlers:
     - name: Reload systemd
