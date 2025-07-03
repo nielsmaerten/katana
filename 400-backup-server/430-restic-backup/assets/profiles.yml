@@ -15,7 +15,7 @@ paperless:
     keep-daily: 30
     keep-weekly: 52
     schedule:
-      - "23:30"
+      - "0/4:20"
   backup:
     one-file-system: true
     option:
@@ -66,7 +66,7 @@ immich:
     send-after-fail:
       - url: "{{ resticprofile_immich_url_fail }}"
     schedule:
-      - "Mon,Thu 6:00"
+      - "0/6:00"
   check:
     schedule:
       - "Sat 01:00"
@@ -80,7 +80,7 @@ katana-backup:
     prune: true
     keep-daily: 7
     schedule:
-      - "23:00"
+      - "0/12:45"
   backup:
     one-file-system: true
     source-base: "/"
