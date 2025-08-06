@@ -1,3 +1,4 @@
 .ansible/.lock
 .vscode/settings.json
 *.env
+vault.yml

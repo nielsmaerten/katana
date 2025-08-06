@@ -32,10 +32,10 @@ paperless:
     send-after-fail:
       - url: "{{ resticprofile_paperless_url_fail }}"
     schedule:
-      - "0/2:01" # Will start after the retention job and wait for it to finish
+      - "0/2:00"
   check:
     schedule:
-      - "Mon 01:02"
+      - "Mon 01:00"
     read-data-subset: "10%"
 
 immich:
@@ -56,9 +56,6 @@ immich:
     source:
       - "/tank/immich"
     exclude-caches: true
-    exclude:
-      - "/**/encoded-video/**"
-      - "/**/thumbs/**"
     send-before:
       - url: "{{ resticprofile_immich_url_before }}"
     send-after:
@@ -66,7 +63,7 @@ immich:
     send-after-fail:
       - url: "{{ resticprofile_immich_url_fail }}"
     schedule:
-      - "0/6:00"
+      - "0/6:30"
   check:
     schedule:
       - "Sat 01:00"
@@ -107,7 +104,7 @@ katana-backup:
     send-after-fail:
       - url: "{{ resticprofile_katana_backup_url_fail }}"
     schedule:
-      - "0/4:00"
+      - "0/4:15"
   check:
     schedule:
       - "Wed 02:02"
