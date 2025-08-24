@@ -25,6 +25,8 @@ paperless:
     exclude-caches: true
     exclude:
       - "/**/log/**"
+    exclude-if-present:
+      - ".nobackup"
     send-before:
       - url: "{{ resticprofile_paperless_url_before }}"
     send-after:
@@ -56,6 +58,8 @@ immich:
     source:
       - "/tank/immich"
     exclude-caches: true
+    exclude-if-present:
+      - ".nobackup"
     send-before:
       - url: "{{ resticprofile_immich_url_before }}"
     send-after:
@@ -81,6 +85,8 @@ katana-backup:
   backup:
     one-file-system: true
     source-base: "/"
+    exclude-if-present:
+      - ".nobackup"
     option:
       - "-o rclone.transfers=4"
     source:

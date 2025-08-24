@@ -161,6 +161,14 @@
           - "'no scheduled jobs found' not in resticprofile_status_scheduled.stdout"
         fail_msg: "Jobs were not properly scheduled. Status output: {{ resticprofile_status_scheduled.stdout }}"
 
+    - name: Configure logrotate
+      copy:
+        src: assets/logrotate.conf
+        dest: /etc/logrotate.d/rclone-sync-restic
+        owner: root
+        group: root
+        mode: '0644'
+
   handlers:
     - name: Reload systemd
       systemd:
