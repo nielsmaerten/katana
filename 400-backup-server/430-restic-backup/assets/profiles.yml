@@ -6,6 +6,40 @@ global:
     permission: "system"
     lock-wait: "5h"
 
+opencloud:
+  status-file: "/root/resticprofile-opencloud.status.json"
+  repository: "rclone:target-opencloud:"
+  password-file: "/root/.restic-password.txt"
+  forget:
+    prune: true
+    keep-daily: 30
+    keep-weekly: 52
+    schedule:
+      - "weekly"
+  backup:
+    one-file-system: true
+    option:
+      - "-o rclone.transfers=4"
+    source:
+      - "/root/opencloud"
+      - "/tank/opencloud"
+    exclude-caches: true
+    exclude-if-present:
+      - ".nobackup"
+    send-before:
+      - url: "{{ resticprofile_opencloud_url_before }}"
+    send-after:
+      - url: "{{ resticprofile_opencloud_url_after }}"
+    send-after-fail:
+      - url: "{{ resticprofile_opencloud_url_fail }}"
+    # Schedule runs every hour at 15 minutes past (e.g., 01:15, 02:15, ...)
+    schedule:
+      - "*:15"
+  check:
+    schedule:
+      - "Wed 01:00"
+    read-data-subset: "10%"
+
 paperless:
   status-file: "/root/resticprofile-paperless.status.json"
   repository: "rclone:target-paperless:"
@@ -121,3 +155,4 @@ groups:
     - "paperless"
     - "katana-backup"
     - "immich"
+    - "opencloud"
