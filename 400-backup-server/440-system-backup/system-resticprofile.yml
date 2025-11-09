@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+version: "1"
+
+global:
+  schedule-defaults:
+    permission: "system"
+    lock-wait: "5h"
+
+system:
+  status-file: "/root/resticprofile-system.status.json"
+  repository: "/tank/restic/katana-system"
+  password-file: "/root/.restic-pass"
+  run-before:
+    # Create LVM volume group backup
+    # This ensures we can restore LVM metadata in case of disk failure
+    # LVM metadata means: physical volume layout, volume group configuration, and logical volume information
+    - "/sbin/vgcfgbackup --file /root/vgcfgbackup.katana-vg katana-vg"
+  forget:
+    prune: true
+    keep-daily: 7
+    keep-weekly: 4
+    schedule:
+      - "Sun 03:30"
+  backup:
+    one-file-system: true
+    source:
+      - "/"
+    exclude:
+      # Virtual filesystems
+      - "/dev/**"
+      - "/proc/**"
+      - "/sys/**"
+      - "/run/**"
+      - "/tmp/**"
+
+      # Application caches and temporary data
+      - "/var/tmp/**"
+      - "/var/cache/apt/**"
+      - "/var/cache/bitmonero/**"
+      - "/var/cache/immich-ml/**"
+      - "/var/cache/ollama/**"
+      - "/var/cache/proxmox-backup/**"
+
+      # LXC and Proxmox VE containers and VMs (backed up separately by PBS)
+      - "/var/lib/vz/**"
+
+      # ZFS datasets (backed up separately by ResticProfile)
+      - "/tank/**"
+
+      # Mount points and swap
+      - "/mnt/**"
+      - "/media/**"
+      - "/swapfile"
+      - "/lost+found/**"
+    schedule:
+      - "02:30"
+  check:
+    read-data-subset: "10%"
+    schedule:
+      - "Fri 03:00"
+
+groups:
+  default:
+    - "system"

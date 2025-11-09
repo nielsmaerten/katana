@@ -1,0 +1,78 @@
+---
+- name: Deploy system restic profile
+  hosts: katana
+  become: yes
+  vars:
+    resticprofile_config_path: /etc/resticprofile/profiles.yml
+    restic_repo_path: /tank/restic/katana-system
+    restic_password_file: /root/.restic-pass
+
+  tasks:
+    - name: Ensure resticprofile is installed
+      stat:
+        path: /usr/bin/resticprofile
+      register: resticprofile_binary
+
+    - name: Abort when resticprofile is missing
+      fail:
+        msg: "resticprofile is not installed on the target host. Please do this manually."
+      when: not resticprofile_binary.stat.exists
+
+    - name: Ensure restic password file exists
+      stat:
+        path: "{{ restic_password_file }}"
+      register: restic_password_state
+
+    - name: Abort when restic password file is missing
+      fail:
+        msg: "Restic password file {{ restic_password_file }} is missing. Please create it manually."
+      when: not restic_password_state.stat.exists
+
+    - name: Ensure restic repository directory exists
+      file:
+        path: "{{ restic_repo_path }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Initialize restic repository if needed
+      command: "restic -r {{ restic_repo_path }} init"
+      args:
+        creates: "{{ restic_repo_path }}/config"
+      environment:
+        RESTIC_PASSWORD_FILE: "{{ restic_password_file }}"
+
+    - name: Ensure resticprofile config directory exists
+      file:
+        path: /etc/resticprofile
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Deploy katana system resticprofile definition
+      copy:
+        src: system-resticprofile.yml
+        dest: "{{ resticprofile_config_path }}"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Unschedule previous katana system timers (if any)
+      command: "/usr/bin/resticprofile --config {{ resticprofile_config_path }} system.unschedule"
+      register: resticprofile_unschedule
+      failed_when: resticprofile_unschedule.rc not in [0, 1, 3]
+      changed_when: resticprofile_unschedule.rc == 0
+
+    - name: Schedule katana system resticprofile timers
+      command: "/usr/bin/resticprofile --config {{ resticprofile_config_path }} system.schedule"
+
+    - name: Display resticprofile schedule status
+      command: "/usr/bin/resticprofile --config {{ resticprofile_config_path }} system.status"
+      register: resticprofile_status
+      changed_when: false
+
+    - name: Show resulting schedule status
+      debug:
+        msg: "{{ resticprofile_status.stdout }}"
