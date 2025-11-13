@@ -12,10 +12,10 @@ opencloud:
   password-file: "/root/.restic-password.txt"
   forget:
     prune: true
-    keep-daily: 30
-    keep-weekly: 52
+    keep-daily: 90
+    keep-hourly: 48
     schedule:
-      - "weekly"
+      - "05:39"
   backup:
     one-file-system: true
     option:
@@ -32,9 +32,9 @@ opencloud:
       - url: "{{ resticprofile_opencloud_url_after }}"
     send-after-fail:
       - url: "{{ resticprofile_opencloud_url_fail }}"
-    # Schedule runs every hour at 15 minutes past (e.g., 01:15, 02:15, ...)
+    # Schedule runs every 15 minutes
     schedule:
-      - "*:15"
+      - "*/15"
   check:
     schedule:
       - "Wed 01:00"
