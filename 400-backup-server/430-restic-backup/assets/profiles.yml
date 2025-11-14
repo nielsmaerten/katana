@@ -21,7 +21,6 @@ opencloud:
     option:
       - "-o rclone.transfers=4"
     source:
-      - "/root/opencloud"
       - "/tank/opencloud"
     exclude-caches: true
     exclude-if-present:
