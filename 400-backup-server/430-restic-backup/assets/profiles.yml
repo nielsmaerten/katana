@@ -12,8 +12,12 @@ opencloud:
   password-file: "/root/.restic-password.txt"
   forget:
     prune: true
-    keep-daily: 90
-    keep-hourly: 48
+    keep-within: "48h" # keep all snapshots from the last 48 hours
+    keep-hourly: 168 # 7 days of hourly restore points
+    keep-daily: 30
+    keep-weekly: 12 # 3 months of weekly restore points
+    keep-monthly: 12
+    group-by: "host,paths"
     schedule:
       - "05:39"
   backup:
